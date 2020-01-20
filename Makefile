@@ -1,7 +1,7 @@
 build:
-	GOOS=linux go build -v ./cmd/techno-db-forum
+	GOOS=linux go build -v -o ./db-forum-kosenkov ./cmd/techno-db-forum
 
 clean:
-	rm -rf ./apiserver
+	rm -rf ./db-forum-kosenkov
 
 .DEFAULT_GOAL := build
