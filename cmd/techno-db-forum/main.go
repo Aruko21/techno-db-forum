@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	//apiserver "github.com/soulphazed/techno-db-forum/internal/app"
-	apiserver "internal/app"
+	apiserver "github.com/soulphazed/techno-db-forum/internal/app"
 )
 
 func main() {
