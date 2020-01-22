@@ -1,8 +1,10 @@
 package apiserver
 
 import (
-	"net/http"
+	"fmt"
 	"github.com/jackc/pgx"
+	"github.com/soulphazed/techno-db-forum/internal/store/create"
+	"net/http"
 	"time"
 )
 
@@ -28,6 +30,8 @@ func Start() error {
 	}
 	defer dbConn.Close()
 
+	server.ConfigureServer(dbConn)
+
 	return http.ListenAndServe(config.BindAddr, server)
 }
 
@@ -46,9 +50,14 @@ func newDB(connectionConfig pgx.ConnConfig) (*pgx.ConnPool, error) {
 		return nil, err
 	}
 
-	//if err := create.CreateTables(conn); err != nil {
-	//	return nil, err
-	//}
+	var result string
+	err = db.QueryRow("SHOW fsync;").Scan(&result)
+
+	fmt.Println("CHECK fsync: ", result)
+
+	if err := create.CreateTables(db); err != nil {
+		return nil, err
+	}
 
 	return db, nil
 }
