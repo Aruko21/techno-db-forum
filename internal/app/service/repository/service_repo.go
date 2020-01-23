@@ -1,7 +1,6 @@
 package serviceRepository
 
 import (
-	"fmt"
 	"github.com/jackc/pgx"
 	"github.com/soulphazed/techno-db-forum/internal/app/service"
 	"github.com/soulphazed/techno-db-forum/internal/model"
@@ -16,7 +15,6 @@ func NewServiceRepository(db *pgx.ConnPool) service.Repository {
 }
 
 func (s ServiceRepository) ClearAll() error {
-	fmt.Println("double check")
 	if _, err := s.db.Exec(`
 		TRUNCATE votes, users, posts, threads, forums, forum_users
 			RESTART IDENTITY CASCADE

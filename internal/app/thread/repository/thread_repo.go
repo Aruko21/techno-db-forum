@@ -170,7 +170,8 @@ func (repo ThreadRepository) CreatePosts(thread *model.Thread, posts *model.Post
 		}
 
 		if post.Parent == 0 {
-			// Prepared Statement
+			// Создание массива пути с единственным значением -
+			// id создаваемого сообщения
 			sqlStr += `
 				(nextval('posts_id_seq'::regclass), ?, ?, ?, ?, ?, ?, 
 				ARRAY[currval(pg_get_serial_sequence('posts', 'id'))::bigint]),`
@@ -197,6 +198,7 @@ func (repo ThreadRepository) CreatePosts(thread *model.Thread, posts *model.Post
 				return nil, errors.New("Parent post was created in another thread")
 			}
 
+			// Конкатенация 2-х массивов
 			sqlStr += `
 				(nextval('posts_id_seq'::regclass), ?, ?, ?, ?, ?, ?, 
 				(SELECT path FROM posts WHERE id = ? AND thread = ?) || 
@@ -271,45 +273,67 @@ func (repo ThreadRepository) GetThreadPosts(thread *model.Thread, limit, desc, s
 		conditionSign = "<"
 	}
 
-	if sort == "flat" {
-		query = `
-			SELECT id, parent, thread, forum, author, created, message, isedited, path
-				FROM posts
-				WHERE thread = $1
+	query = `
+		SELECT id, parent, thread, forum, author, created, message, isedited, path
+			FROM posts
+			WHERE thread = $1
+	`
+
+	switch sort {
+	case "tree": {
+		if since != "" {
+			query += fmt.Sprintf(" AND path %s (SELECT path FROM posts WHERE id = %s)", conditionSign, since)
+		}
+		query += fmt.Sprintf(" ORDER BY path %s ", desc)
+		query += fmt.Sprintf(" LIMIT %s", limit)
+	}
+
+	case "parent_tree": {
+		query += `
+			AND path[1] IN ( 
+				SELECT id FROM posts
+					WHERE thread = $1
 		`
+		if since != "" {
+			query += fmt.Sprintf(" AND id %s (SELECT path[1] FROM posts WHERE id = %s)", conditionSign, since)
+		} else {
+			// Данное условие нужно, чтобы не писать отдельный индекс на thread, parent, а использовать thread, id, parent
+			query += fmt.Sprintf(" AND id > 0")
+		}
+		// TODO: Здесь возможен индекс, но я не уверен, что он не нагрузит слишком сильно систему при заполнении данных
+		query += ` AND parent = 0 `
+		query += fmt.Sprintf(" ORDER BY path[1] %s LIMIT %s )", desc, limit )
+
+		if desc == "desc" {
+			query += ` ORDER BY path[1] DESC, path`
+		} else {
+			query += ` ORDER BY path`
+		}
+	}
+
+	default: {
 		if since != "" {
 			query += fmt.Sprintf(" AND id %s %s ", conditionSign, since)
 		}
 		query += fmt.Sprintf(" ORDER BY created %s, id %s LIMIT %s", desc, desc, limit)
-	} else if sort == "tree" {
-		orderString := fmt.Sprintf(" ORDER BY path[1] %s, path %s ", desc, desc)
-
-		query = `
-			SELECT id, parent, thread, forum, author, created, message, isedited, path
-				FROM posts
-				WHERE thread = $1
-		`
-		if since != "" {
-			query += fmt.Sprintf(" AND path %s (SELECT path FROM posts WHERE id = %s) ", conditionSign, since)
-		}
-		query += orderString
-		query += fmt.Sprintf("LIMIT %s", limit)
-
-	} else if sort == "parent_tree" {
-		query = `
-			SELECT id, parent, thread, forum, author, created, message, isedited, path
-				FROM posts
-				WHERE thread = $1 AND path && (SELECT ARRAY (select id from posts WHERE thread = $1 AND parent = 0
-		`
-		if since != "" {
-			query += fmt.Sprintf(" AND path %s (SELECT path[1:1] FROM posts WHERE id = %s) ", conditionSign, since)
-		}
-		query += fmt.Sprintf("ORDER BY path[1] %s, path LIMIT %s)) ", desc, limit)
-		query += fmt.Sprintf("ORDER BY path[1] %s, path ", desc)
 	}
+
+	}
+
+	//case "parent_tree" {
+	//	query += `
+	//		AND path && (SELECT ARRAY (select id from posts WHERE thread = $1 AND parent = 0
+	//	`
+	//	if since != "" {
+	//		query += fmt.Sprintf(" AND path %s (SELECT path[1:1] FROM posts WHERE id = %s) ", conditionSign, since)
+	//	}
+	//	query += fmt.Sprintf("ORDER BY path[1] %s, path LIMIT %s)) ", desc, limit)
+	//	query += fmt.Sprintf("ORDER BY path[1] %s, path ", desc)
+	//}
 
 	rows, err := repo.db.Query(query, thread.ID)
 	if err != nil {
+		fmt.Println("Sort error!: ", err, "\n for SQL: ", query)
 		return nil, err
 	}
 

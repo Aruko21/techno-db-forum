@@ -6,10 +6,9 @@ DROP INDEX IF EXISTS idx_forums_slug_uindex;
 DROP INDEX IF EXISTS idx_forums_author_unique;;
 DROP INDEX IF EXISTS idx_threads_slug;
 DROP INDEX IF EXISTS idx_threads_forum;
-DROP INDEX IF EXISTS idx_posts_forum;
-DROP INDEX IF EXISTS idx_posts_parent;
+-- DROP INDEX IF EXISTS idx_posts_parent;
 DROP INDEX IF EXISTS idx_posts_path;
-DROP INDEX IF EXISTS idx_posts_thread;
+-- DROP INDEX IF EXISTS idx_posts_thread;
 DROP INDEX IF EXISTS idx_posts_thread_id;
 
 DROP TRIGGER IF EXISTS on_vote_insert ON votes;
@@ -82,10 +81,9 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_posts_path ON posts USING GIN (path);
-CREATE INDEX IF NOT EXISTS idx_posts_thread ON posts (thread);
-CREATE INDEX IF NOT EXISTS idx_posts_forum ON posts (forum);
-CREATE INDEX IF NOT EXISTS idx_posts_parent ON posts (parent);
-CREATE INDEX IF NOT EXISTS idx_posts_thread_id ON posts (thread, id);
+-- CREATE INDEX IF NOT EXISTS idx_posts_thread ON posts (thread);
+-- CREATE INDEX IF NOT EXISTS idx_posts_parent ON posts (parent);
+CREATE INDEX IF NOT EXISTS idx_posts_thread_id ON posts (thread, id, parent);
 
 CREATE TABLE IF NOT EXISTS votes(
     nickname varchar  REFERENCES users(nickname) NOT NULL,

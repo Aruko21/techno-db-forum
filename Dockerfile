@@ -1,9 +1,5 @@
 FROM golang:1.13.4-stretch AS build
 
-# Копируем исходный код в Docker-контейнер
-#ADD golang/ /opt/build/golang/
-#ADD common/ /opt/build/commnon/
-
 WORKDIR /usr/src/techno-db
 
 COPY go.mod .
@@ -13,11 +9,9 @@ RUN go mod download
 COPY . .
 RUN make build
 
-
 FROM ubuntu:18.04 AS release
 
 MAINTAINER Aleksandr Kosenkov
-
 
 #
 # Установка postgresql
@@ -25,7 +19,6 @@ MAINTAINER Aleksandr Kosenkov
 ENV PGVER 10
 RUN apt -y update && apt install -y postgresql-$PGVER
 
-# Run the rest of the commands as the ``postgres`` user created by the ``postgres-$PGVER`` package when it was ``apt-get installed``
 USER postgres
 
 # Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
@@ -44,7 +37,6 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "include_dir='conf.d'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 ADD ./postgresql.conf /etc/postgresql/$PGVER/main/conf.d
 
-
 # Expose the PostgreSQL port
 EXPOSE 5432
 
@@ -54,13 +46,10 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 # Back to the root user
 USER root
 
-# Объявлем порт сервера
+# EXPOSE the server port
 EXPOSE 5000
 
-# Собранный ранее сервер
 COPY --from=build /usr/src/techno-db/ .
 
-#
-# Запускаем PostgreSQL и сервер
-#
+# Launch PostgreSQL and server
 CMD service postgresql start && ./db-forum-kosenkov --scheme=http --port=5000 --host=0.0.0.0

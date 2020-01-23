@@ -22,6 +22,10 @@ func Start() error {
 		Host:              "localhost",
 		Port:              5432,
 		Database:          "db-forum",
+		//RuntimeParams: map[string]string{
+		//	"standard_conforming_strings": "on",
+		//},
+		//PreferSimpleProtocol: true,
 	}
 
 	dbConn, err := newDB(pgxConfig)
