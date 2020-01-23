@@ -19,9 +19,9 @@ func NewUserHandler(m *mux.Router, u user.Usecase) {
 		UserUsecase: u,
 	}
 
-	m.HandleFunc("/user/{nickname}/create", handler.HandleCreateUser).Methods(http.MethodPost, http.MethodOptions)
+	m.HandleFunc("/user/{nickname}/create", handler.HandleCreateUser).Methods(http.MethodPost)
 	m.HandleFunc("/user/{nickname}/profile", handler.HandleGetProfile).Methods(http.MethodGet)
-	m.HandleFunc("/user/{nickname}/profile", handler.HandleChangeProfile).Methods(http.MethodPost, http.MethodOptions)
+	m.HandleFunc("/user/{nickname}/profile", handler.HandleChangeProfile).Methods(http.MethodPost)
 }
 
 func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {

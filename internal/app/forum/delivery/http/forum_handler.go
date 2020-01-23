@@ -19,8 +19,8 @@ func NewForumHandler(m *mux.Router, fu forum.Usecase) {
 		ForumUsecase: fu,
 	}
 
-	m.HandleFunc("/forum/create", handler.HandleForumCreate).Methods(http.MethodPost, http.MethodOptions)
-	m.HandleFunc("/forum/{slug}/create", handler.HandleForumCreateThread).Methods(http.MethodPost, http.MethodOptions)
+	m.HandleFunc("/forum/create", handler.HandleForumCreate).Methods(http.MethodPost)
+	m.HandleFunc("/forum/{slug}/create", handler.HandleForumCreateThread).Methods(http.MethodPost)
 	m.HandleFunc("/forum/{slug}/details", handler.HandleForumGetDetails).Methods(http.MethodGet)
 	m.HandleFunc("/forum/{slug}/threads", handler.HandleForumGetThreads).Methods(http.MethodGet)
 	m.HandleFunc("/forum/{slug}/users", handler.HandleForumGetUsers).Methods(http.MethodGet)

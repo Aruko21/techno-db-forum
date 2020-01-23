@@ -18,7 +18,7 @@ func NewPostHandler(m *mux.Router, u post.Usecase) {
 		PostUsecase: u,
 	}
 
-	m.HandleFunc("/post/{id}/details", handler.HandleUpdatePost).Methods(http.MethodPost, http.MethodOptions)
+	m.HandleFunc("/post/{id}/details", handler.HandleUpdatePost).Methods(http.MethodPost)
 	m.HandleFunc("/post/{id}/details", handler.HandleGetPostDetails).Methods(http.MethodGet)
 }
 

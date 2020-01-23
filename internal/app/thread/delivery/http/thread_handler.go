@@ -18,11 +18,11 @@ func NewThreadHandler(m *mux.Router, u thread.Usecase) {
 		ThreadUsecase: u,
 	}
 
-	m.HandleFunc("/thread/{slug_or_id}/create", handler.HandleCreatePosts).Methods(http.MethodPost, http.MethodOptions)
+	m.HandleFunc("/thread/{slug_or_id}/create", handler.HandleCreatePosts).Methods(http.MethodPost)
 	m.HandleFunc("/thread/{slug_or_id}/details", handler.HandleGetThreadDetails).Methods(http.MethodGet)
-	m.HandleFunc("/thread/{slug_or_id}/details", handler.HandleUpdateThreadDetails).Methods(http.MethodPost, http.MethodOptions)
+	m.HandleFunc("/thread/{slug_or_id}/details", handler.HandleUpdateThreadDetails).Methods(http.MethodPost)
 	m.HandleFunc("/thread/{slug_or_id}/posts", handler.HandleGetThreadPosts).Methods(http.MethodGet)
-	m.HandleFunc("/thread/{slug_or_id}/vote", handler.HandleVoteForThread).Methods(http.MethodPost, http.MethodOptions)
+	m.HandleFunc("/thread/{slug_or_id}/vote", handler.HandleVoteForThread).Methods(http.MethodPost)
 }
 
 func (h *ThreadHandler) HandleCreatePosts(w http.ResponseWriter, r *http.Request) {
